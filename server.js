@@ -1,24 +1,35 @@
+///////////////////////////////
 // DEPENDENCIES
+///////////////////////////////
 require('dotenv').config();
 const { PORT = 4567, DATABASE_URL } = process.env;
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
+const bcrypt = require('bcrypt'); // if you plan to hash passwords
 const app = express();
 
+///////////////////////////////
 // DATABASE CONNECTION
+///////////////////////////////
 mongoose.connect(DATABASE_URL, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
-});
+}).then(() => {
+    console.log('Connected to mongoose. Good job!');
+}).catch(error => {
+    console.error('Disconnected to mongoose...Fix me!', error);
+})
 
 mongoose.connection
     .on('open', () => console.log('Connected to mongoose. Good job!'))
     .on('close', () => console.log('Disconnected from mongoose... Fix me!'))
     .on('error', (error) => console.log(error));
 
+///////////////////////////////
 // MODELS
+///////////////////////////////
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -79,7 +90,7 @@ const reviewSchema = new mongoose.Schema({
 
 const Review = mongoose.model('Review', reviewSchema);
 
-// Location Schema
+// Location Schema 
 const locationSchema = new mongoose.Schema({
     name: String, // Name of the location
     coordinates: {
@@ -94,12 +105,28 @@ const locationSchema = new mongoose.Schema({
 
 const Location = mongoose.model('Location', locationSchema);
 
+
+// DogPark Schema
+const dogParkSchema = new mongoose.Schema({
+    name: String, // Name of the location
+    coordinates: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point',
+        },
+        coordinates: [Number], // Latitude and longitude coordinates of the location
+    },
+});
+
+const DogPark = mongoose.model('DogPark', dogParkSchema);
+
 module.exports = {
     User,
     Match,
     Message,
     Review,
-    Location,
+    DogPark, 
 };
 
 ///////////////////////////////
@@ -118,55 +145,62 @@ app.get('/', (req, res) => {
     res.send('Hi server');
 });
 
-// INDEX
-app.get('/dogs', async (req, res) => {
+// INDEX - Retrieve all dog parks
+app.get('/dogparks', async (req, res) => {
     try {
-        // send all users
-        res.json(await User.find({}));
+        res.json(await DogPark.find({}));
     }
     catch (error) {
-        //send error
         res.status(400).json(error);
     }
 });
 
-// SHOW
-app.get('/dogs/:id', async (req, res) => {
+// SHOW - Retrieve a single dog park by ID
+app.get('/dogparks/:id', async (req, res) => {
     try {
-        const dogs = await Dogs.findById(req.params.id);
-        res.json(dogs);
+        res.json(await DogPark.findById(req.params.id));
     } catch (error) {
         res.status(400).json(error);
     }
 });
 
-// CREATE
-app.post('/dogs', async (req, res) => {
+// CREATE - Add a new dog park
+app.post('/dogparks', async (req, res) => {
     try {
-        res.json(await Dogs.create(req.body));
+        res.json(await DogPark.create(req.body));
     } catch (error) {
         res.status(400).json(error);
     }
 });
 
-// UPDATE
-app.put('/dogs/:id', async (req, res) => {
+// UPDATE - Modify an existing dog park by ID
+app.put('/dogparks/:id', async (req, res) => {
     try {
         res.json(
-            await Dogs.findbyIdAndUpdate(req.params.id, req.body, { new: true })
+            await DogPark.findByIdAndUpdate(req.params.id, req.body, { new: true })
         );
     } catch (error) {
         res.status(400).json(error);
     }
 });
 
-// DELETE
-app.delete('/dogs/:id', async (req, res) => {
+// DELETE - Remove a dog park by ID
+app.delete('/dogparks/:id', async (req, res) => {
     try {
-        res.json(await Dogs.findByIdAndRemove(req.params.id));
+        res.json(await DogPark.findByIdAndRemove(req.params.id));
     } catch (error) {
         res.status(400).json(error);
     }
+});
+
+///////////////////////////////
+// ADDITIONAL ERROR HANDLING
+////////////////////////////////
+app.use((error, req, res, next) => {
+    res.status(500).json({ error: error.message });
+});
+app.use((req, res) => {
+    res.status(404).send('Route not found');
 });
 
 ///////////////////////////////
