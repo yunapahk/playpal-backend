@@ -108,27 +108,27 @@ const Match = mongoose.model('Match', MatchSchema);
 // const Location = mongoose.model('Location', locationSchema);
 
 
-// // DogPark Schema
-// const dogParkSchema = new mongoose.Schema({
-//     name: String, // Name of the location
-//     coordinates: {
-//         type: {
-//             type: String,
-//             enum: ['Point'],
-//             default: 'Point',
-//         },
-//         coordinates: [Number], // Latitude and longitude coordinates of the location
-//     },
-// });
+// DogPark Schema
+const dogParkSchema = new mongoose.Schema({
+    name: String, // Name of the location
+    coordinates: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point',
+        },
+        coordinates: [Number], // Latitude and longitude coordinates of the location
+    },
+});
 
-// const DogPark = mongoose.model('DogPark', dogParkSchema);
+const DogPark = mongoose.model('DogPark', dogParkSchema);
 
 module.exports = {
     Dog,
     Match,
     // Message,
     // Review,
-    // DogPark, 
+    DogPark, 
 };
 
 ///////////////////////////////
@@ -251,54 +251,56 @@ app.delete("/match/:id", async (req, res) => {
     }
 });
 
+///////////////////////////////
+// Dogpark Routes
+///////////////////////////////
+// // INDEX - GET - /dogpark - retrieve all dog parks
+app.get("/dogpark", async (req, res) => {
+    try {
+        res.json(await DogPark.find({}));
+    } catch (error) {
+        res.status(400).json({ error });
+    }
+});
 
-// // INDEX - Retrieve all dog parks
-// app.get('/dogparks', async (req, res) => {
-//     try {
-//         res.json(await DogPark.find({}));
-//     }
-//     catch (error) {
-//         res.status(400).json(error);
-//     }
-// });
+// SHOW - GET - /dogpark/:id - get a single dog park
+app.get("/dogpark/:id", async (req, res) => {
+    try {
+        res.json(await DogPark.findById(req.params.id));
+    } catch (error) {
+        res.status(400).json({ error });
+    }
+});
 
-// // SHOW - Retrieve a single dog park by ID
-// app.get('/dogparks/:id', async (req, res) => {
-//     try {
-//         res.json(await DogPark.findById(req.params.id));
-//     } catch (error) {
-//         res.status(400).json(error);
-//     }
-// });
+// CREATE - POST - /dogpark - create a new dog park
+app.post("/dogpark", async (req, res) => {
+    try {
+        res.json(await DogPark.create(req.body));
+    } catch (error) {
+        res.status(400).json({ error });
+    }
+});
 
-// // CREATE - Add a new dog park
-// app.post('/dogparks', async (req, res) => {
-//     try {
-//         res.json(await DogPark.create(req.body));
-//     } catch (error) {
-//         res.status(400).json(error);
-//     }
-// });
+// UPDATE - PUT - /dogpark/:id - update a single dog park
+app.put("/dogpark/:id", async (req, res) => {
+    try {
+        res.json(
+            await DogPark.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        );
+    } catch (error) {
+        res.status(400).json({ error });
+    }
+});
 
-// // UPDATE - Modify an existing dog park by ID
-// app.put('/dogparks/:id', async (req, res) => {
-//     try {
-//         res.json(
-//             await DogPark.findByIdAndUpdate(req.params.id, req.body, { new: true })
-//         );
-//     } catch (error) {
-//         res.status(400).json(error);
-//     }
-// });
+// DELETE - DELETE - /dogpark/:id - delete a single dog park
+app.delete("/dogpark/:id", async (req, res) => {
+    try {
+        res.json(await DogPark.findByIdAndRemove(req.params.id));
+    } catch (error) {
+        res.status(400).json({ error });
+    }
+});
 
-// // DELETE - Remove a dog park by ID
-// app.delete('/dogparks/:id', async (req, res) => {
-//     try {
-//         res.json(await DogPark.findByIdAndRemove(req.params.id));
-//     } catch (error) {
-//         res.status(400).json(error);
-//     }
-// });
 
 
 ///////////////////////////////
