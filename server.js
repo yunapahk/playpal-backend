@@ -53,24 +53,24 @@ const DogSchema = new mongoose.Schema({
 
 const Dog = mongoose.model('Dog', DogSchema);
 
-// // Match Schema
-// const matchSchema = new mongoose.Schema({
-//     dogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Dog', required: true }], // References to dogs involved in the match
-//     status: { type: String, enum: ['Pending', 'Accepted', 'Rejected'], default: 'Pending' }, // Status of the match
-//     location: {
-//         type: {
-//             type: String,
-//             enum: ['Point'],
-//             default: 'Point',
-//         },
-//         coordinates: { type: [Number], required: true }, // Coordinates of the match location
-//     },
-//     createdAt: { type: Date, default: Date.now }, // Timestamp of when the match was created
-// });
+// Match Schema
+const MatchSchema = new mongoose.Schema({
+    dogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Dog', required: true }], // References to dogs involved in the match
+    status: { type: String, enum: ['Pending', 'Accepted', 'Rejected'], default: 'Pending' }, // Status of the match
+    location: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point',
+        },
+        coordinates: { type: [Number], required: true }, // Coordinates of the match location
+    },
+    createdAt: { type: Date, default: Date.now }, // Timestamp of when the match was created
+});
 
-// matchSchema.index({ location: '2dsphere' }); // Geospatial index for location
+MatchSchema.index({ location: '2dsphere' }); // Geospatial index for location
 
-// const Match = mongoose.model('Match', matchSchema);
+const Match = mongoose.model('Match', MatchSchema);
 
 // // Message Schema
 // const messageSchema = new mongoose.Schema({
@@ -125,7 +125,7 @@ const Dog = mongoose.model('Dog', DogSchema);
 
 module.exports = {
     Dog,
-    // Match,
+    Match,
     // Message,
     // Review,
     // DogPark, 
@@ -147,8 +147,9 @@ app.get('/', (req, res) => {
     res.send('Hi server');
 });
 
-// CRUD Endpoints for Dog
-
+///////////////////////////////
+// Dog Routes
+///////////////////////////////
 // INDEX - GET - /dogs - gets all dogs
 app.get("/dog", async (req, res) => {
     try {
@@ -177,7 +178,7 @@ app.get("/dog/:id", async (req, res) => {
     }
 });
 
-// UPDATE - PUT - /dogs/:id - update a single dog
+// UPDATE - PUT - /dog/:id - update a single dog
 app.put("/dog/:id", async (req, res) => {
     try {
         res.json(
@@ -198,6 +199,57 @@ app.delete("/dog/:id", async (req, res) => {
       res.status(400).json(error);
     }
   });
+
+///////////////////////////////
+// Match Routes
+///////////////////////////////
+// INDEX - GET - /matches - gets all matches
+app.get("/match", async (req, res) => {
+    try {
+        res.json(await Match.find({}).populate('dogs')); // Populating 'dogs' field to retrieve detailed info
+    } catch (error) {
+        res.status(400).json({ error });
+    }
+});
+
+// CREATE - POST - /matches - create a new match
+app.post("/match", async (req, res) => {
+    try {
+      res.json(await Match.create(req.body))
+    } catch (error) {
+        res.status(400).json({ error });
+    }
+});
+
+// SHOW - GET - /matches/:id - get a single match
+app.get("/match/:id", async (req, res) => {
+    try {
+        const match = await Match.findById(req.params.id).populate('dogs'); // Populating 'dogs' field to retrieve detailed info
+        res.json(match);
+    } catch (error) {
+        res.status(400).json({ error });
+    }
+});
+
+// UPDATE - PUT - /matches/:id - update a single match
+app.put("/match/:id", async (req, res) => {
+    try {
+        res.json(
+            await Match.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('dogs')
+        );
+    } catch (error) {
+        res.status(400).json({ error });
+    }
+});
+
+// DELETE - DELETE - /matches/:id - delete a single match
+app.delete("/match/:id", async (req, res) => {
+    try {
+      res.json(await Match.findByIdAndRemove(req.params.id));
+    } catch (error) {
+      res.status(400).json({ error });
+    }
+});
 
 
 // // INDEX - Retrieve all dog parks
@@ -248,6 +300,12 @@ app.delete("/dog/:id", async (req, res) => {
 //     }
 // });
 
+
+///////////////////////////////
+// LISTENER
+////////////////////////////////
+app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`))
+
 ///////////////////////////////
 // ADDITIONAL ERROR HANDLING
 ////////////////////////////////
@@ -257,8 +315,3 @@ app.use((error, req, res, next) => {
 app.use((req, res) => {
     res.status(404).send('Route not found');
 });
-
-///////////////////////////////
-// LISTENER
-////////////////////////////////
-app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`))
