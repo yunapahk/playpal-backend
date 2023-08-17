@@ -1,37 +1,48 @@
+///////////////////////////////
 // DEPENDENCIES
+///////////////////////////////
 require('dotenv').config();
 const { PORT = 4567, DATABASE_URL } = process.env;
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
+// const bcrypt = require('bcrypt'); // if you plan to hash passwords
 const app = express();
 
+///////////////////////////////
 // DATABASE CONNECTION
+///////////////////////////////
 mongoose.connect(DATABASE_URL, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
-});
+}).then(() => {
+    console.log('Connected to mongoose. Good job!');
+}).catch(error => {
+    console.error('Disconnected to mongoose...Fix me!', error);
+})
 
 mongoose.connection
     .on('open', () => console.log('Connected to mongoose. Good job!'))
     .on('close', () => console.log('Disconnected from mongoose... Fix me!'))
     .on('error', (error) => console.log(error));
 
+///////////////////////////////
 // MODELS
+///////////////////////////////
 
 // User Schema
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true }, // Username of the user
-    password: { type: String, required: true }, // Hashed password for user authentication
-    email: { type: String, required: true }, // Email address of the user
-    dogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Dog' }], // References to dogs owned by the user
-});
+// const userSchema = new mongoose.Schema({
+//     username: { type: String, required: true }, // Username of the user
+//     password: { type: String, required: true }, // Hashed password for user authentication
+//     email: { type: String, required: true }, // Email address of the user
+//     dogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Dog' }], // References to dogs owned by the user
+// });
 
-const User = mongoose.model('User', userSchema);
+// const User = mongoose.model('User', userSchema);
 
 // Dog Schema
-const dogSchema = new mongoose.Schema({
+const DogSchema = new mongoose.Schema({
     name: { type: String, required: true }, // Name of the dog
     breed: String, // Breed of the dog
     age: Number, // Age of the dog
@@ -40,66 +51,84 @@ const dogSchema = new mongoose.Schema({
     activityLevel: { type: String, enum: ['Low', 'Medium', 'High'] }, // Activity level of the dog (enums: Low, Medium, High)
 });
 
-// Match Schema
-const matchSchema = new mongoose.Schema({
-    dogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Dog', required: true }], // References to dogs involved in the match
-    status: { type: String, enum: ['Pending', 'Accepted', 'Rejected'], default: 'Pending' }, // Status of the match
-    location: {
-        type: {
-            type: String,
-            enum: ['Point'],
-            default: 'Point',
-        },
-        coordinates: { type: [Number], required: true }, // Coordinates of the match location
-    },
-    createdAt: { type: Date, default: Date.now }, // Timestamp of when the match was created
-});
+const Dog = mongoose.model('Dog', DogSchema);
 
-matchSchema.index({ location: '2dsphere' }); // Geospatial index for location
+// // Match Schema
+// const matchSchema = new mongoose.Schema({
+//     dogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Dog', required: true }], // References to dogs involved in the match
+//     status: { type: String, enum: ['Pending', 'Accepted', 'Rejected'], default: 'Pending' }, // Status of the match
+//     location: {
+//         type: {
+//             type: String,
+//             enum: ['Point'],
+//             default: 'Point',
+//         },
+//         coordinates: { type: [Number], required: true }, // Coordinates of the match location
+//     },
+//     createdAt: { type: Date, default: Date.now }, // Timestamp of when the match was created
+// });
 
-const Match = mongoose.model('Match', matchSchema);
+// matchSchema.index({ location: '2dsphere' }); // Geospatial index for location
 
-// Message Schema
-const messageSchema = new mongoose.Schema({
-    match: { type: mongoose.Schema.Types.ObjectId, ref: 'Match', required: true }, // Reference to the associated match
-    sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the sender user
-    content: String, // Content of the message
-    timestamp: { type: Date, default: Date.now }, // Timestamp of when the message was sent
-});
+// const Match = mongoose.model('Match', matchSchema);
 
-const Message = mongoose.model('Message', messageSchema);
+// // Message Schema
+// const messageSchema = new mongoose.Schema({
+//     match: { type: mongoose.Schema.Types.ObjectId, ref: 'Match', required: true }, // Reference to the associated match
+//     sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the sender user
+//     content: String, // Content of the message
+//     timestamp: { type: Date, default: Date.now }, // Timestamp of when the message was sent
+// });
 
-// Review Schema
-const reviewSchema = new mongoose.Schema({
-    reviewer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the user leaving the review
-    reviewee: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the user being reviewed
-    rating: { type: Number, min: 1, max: 5, required: true }, // Rating given in the review
-    content: String, // Additional comments or feedback in the review
-});
+// const Message = mongoose.model('Message', messageSchema);
 
-const Review = mongoose.model('Review', reviewSchema);
+// // Review Schema
+// const reviewSchema = new mongoose.Schema({
+//     reviewer: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the user leaving the review
+//     reviewee: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the user being reviewed
+//     rating: { type: Number, min: 1, max: 5, required: true }, // Rating given in the review
+//     content: String, // Additional comments or feedback in the review
+// });
 
-// Location Schema
-const locationSchema = new mongoose.Schema({
-    name: String, // Name of the location
-    coordinates: {
-        type: {
-            type: String,
-            enum: ['Point'],
-            default: 'Point',
-        },
-        coordinates: [Number], // Latitude and longitude coordinates of the location
-    },
-});
+// const Review = mongoose.model('Review', reviewSchema);
 
-const Location = mongoose.model('Location', locationSchema);
+// // Location Schema 
+// const locationSchema = new mongoose.Schema({
+//     name: String, // Name of the location
+//     coordinates: {
+//         type: {
+//             type: String,
+//             enum: ['Point'],
+//             default: 'Point',
+//         },
+//         coordinates: [Number], // Latitude and longitude coordinates of the location
+//     },
+// });
+
+// const Location = mongoose.model('Location', locationSchema);
+
+
+// // DogPark Schema
+// const dogParkSchema = new mongoose.Schema({
+//     name: String, // Name of the location
+//     coordinates: {
+//         type: {
+//             type: String,
+//             enum: ['Point'],
+//             default: 'Point',
+//         },
+//         coordinates: [Number], // Latitude and longitude coordinates of the location
+//     },
+// });
+
+// const DogPark = mongoose.model('DogPark', dogParkSchema);
 
 module.exports = {
-    User,
-    Match,
-    Message,
-    Review,
-    Location,
+    Dog,
+    // Match,
+    // Message,
+    // Review,
+    // DogPark, 
 };
 
 ///////////////////////////////
@@ -118,55 +147,115 @@ app.get('/', (req, res) => {
     res.send('Hi server');
 });
 
-// INDEX
-app.get('/dogs', async (req, res) => {
+// CRUD Endpoints for Dog
+
+// INDEX - GET - /dogs - gets all dogs
+app.get("/dog", async (req, res) => {
     try {
-        // send all users
-        res.json(await User.find({}));
-    }
-    catch (error) {
-        //send error
-        res.status(400).json(error);
+        res.json(await Dog.find({}));
+    } catch (error) {
+        res.status(400).json({ error });
     }
 });
 
-// SHOW
-app.get('/dogs/:id', async (req, res) => {
+// CREATE - POST - /dogs - create a new dog
+app.post("/dog", async (req, res) => {
     try {
-        const dogs = await Dogs.findById(req.params.id);
-        res.json(dogs);
+      res.json(await Dog.create(req.body))
     } catch (error) {
         res.status(400).json(error);
     }
 });
 
-// CREATE
-app.post('/dogs', async (req, res) => {
+// SHOW - GET - /dogs/:id - get a single dog
+app.get("/dog/:id", async (req, res) => {
     try {
-        res.json(await Dogs.create(req.body));
+        const dog = await Dog.findById(req.params.id);
+        res.json(dog);
     } catch (error) {
-        res.status(400).json(error);
+        res.status(400).json({ error });
     }
 });
 
-// UPDATE
-app.put('/dogs/:id', async (req, res) => {
+// UPDATE - PUT - /dogs/:id - update a single dog
+app.put("/dog/:id", async (req, res) => {
     try {
         res.json(
-            await Dogs.findbyIdAndUpdate(req.params.id, req.body, { new: true })
+            await Dog.findByIdAndUpdate(req.params.id, req.body, { new: true })
         );
     } catch (error) {
-        res.status(400).json(error);
+        res.status(400).json({ error });
     }
 });
 
-// DELETE
-app.delete('/dogs/:id', async (req, res) => {
+// DELETE - delete a single dog
+app.delete("/dog/:id", async (req, res) => {
     try {
-        res.json(await Dogs.findByIdAndRemove(req.params.id));
+      // send all dogs
+      res.json(await Dog.findByIdAndRemove(req.params.id));
     } catch (error) {
-        res.status(400).json(error);
+      //send error
+      res.status(400).json(error);
     }
+  });
+
+
+// // INDEX - Retrieve all dog parks
+// app.get('/dogparks', async (req, res) => {
+//     try {
+//         res.json(await DogPark.find({}));
+//     }
+//     catch (error) {
+//         res.status(400).json(error);
+//     }
+// });
+
+// // SHOW - Retrieve a single dog park by ID
+// app.get('/dogparks/:id', async (req, res) => {
+//     try {
+//         res.json(await DogPark.findById(req.params.id));
+//     } catch (error) {
+//         res.status(400).json(error);
+//     }
+// });
+
+// // CREATE - Add a new dog park
+// app.post('/dogparks', async (req, res) => {
+//     try {
+//         res.json(await DogPark.create(req.body));
+//     } catch (error) {
+//         res.status(400).json(error);
+//     }
+// });
+
+// // UPDATE - Modify an existing dog park by ID
+// app.put('/dogparks/:id', async (req, res) => {
+//     try {
+//         res.json(
+//             await DogPark.findByIdAndUpdate(req.params.id, req.body, { new: true })
+//         );
+//     } catch (error) {
+//         res.status(400).json(error);
+//     }
+// });
+
+// // DELETE - Remove a dog park by ID
+// app.delete('/dogparks/:id', async (req, res) => {
+//     try {
+//         res.json(await DogPark.findByIdAndRemove(req.params.id));
+//     } catch (error) {
+//         res.status(400).json(error);
+//     }
+// });
+
+///////////////////////////////
+// ADDITIONAL ERROR HANDLING
+////////////////////////////////
+app.use((error, req, res, next) => {
+    res.status(500).json({ error: error.message });
+});
+app.use((req, res) => {
+    res.status(404).send('Route not found');
 });
 
 ///////////////////////////////
