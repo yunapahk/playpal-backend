@@ -20,12 +20,31 @@ mongoose.connection
 
 // MODELS
 
+const ImageSchema = new mongoose.Schema({
+    url: {
+        type: String,
+        required: true
+    },
+    // ... other image properties
+});
+function arrayLimitUser(val) {
+    return val.length >= 1;
+}
+function arrayLimitDog(val) {
+    return val.length >= 3;
+}
+
 // User Schema
 const userSchema = new mongoose.Schema({
-    username: { type: String, required: true }, // Username of the user
-    password: { type: String, required: true }, // Hashed password for user authentication
-    email: { type: String, required: true }, // Email address of the user
-    dogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Dog' }], // References to dogs owned by the user
+    username: { type: String, required: true },
+    password: { type: String, required: true },
+    email: { type: String, required: true },
+    dogs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Dog' }],
+    images: {
+        type: [ImageSchema],
+        required: true,
+        validate: [arrayLimitUser, '{PATH} should have at least 1 image.']
+    },
 });
 
 const User = mongoose.model('User', userSchema);
