@@ -46,10 +46,10 @@ Find your perfect match! Swipe left or right to browse through profiles of dogs 
 ![Socket.io](https://i.imgur.com/XqMBEYW.png)
 
 ## Endpoints
-![All Endpoints](https://i.imgur.com/JQLyZZD.png)
+![All Endpoints](https://i.imgur.com/4gUcGVg.png)
 
 ## Schemas
-![All Schemas](https://i.imgur.com/7jiqcJp.png)
+![All Schemas](https://i.imgur.com/7YnQFRQ.png)
    
 ## ERD (ENTITY RELATIONSHIP DIAGRAM)
 ``` mermaid
