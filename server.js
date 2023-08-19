@@ -1,3 +1,6 @@
+//////////////////////
+//IMPORT DPEPENDENCIES
+//////////////////////
 require('dotenv').config();
 const { PORT = 4567, DATABASE_URL } = process.env;
 const express = require('express');
@@ -6,17 +9,12 @@ const cors = require('cors');
 const morgan = require('morgan');
 const app = express();
 
-app.use(cors());
-app.use(morgan('dev'));
-app.use(express.json());
-
+//////////////////////
+//DATABASE CONNECTION
+//////////////////////
 mongoose.connect(DATABASE_URL, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
-}).then(() => {
-    console.log('Connected to mongoose. Good job!');
-}).catch(error => {
-    console.error('Disconnected to mongoose...Fix me!', error);
 });
 
 mongoose.connection
@@ -24,65 +22,39 @@ mongoose.connection
     .on('close', () => console.log('Disconnected from mongoose... Fix me!'))
     .on('error', (error) => console.log(error));
 
-// DogSchema definition
+///////////////////////////////
+// MODELS
+////////////////////////////////
 const DogSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    breed: String,
-    age: Number,
-    // An array of image URLs to represent the dog.
-    // The user must provide at least 3 images.
-    images: {
-        type: [String], 
-        validate: {
-            validator: function(v) {
-                return v.length >= 3;
-            },
-            message: '{PATH} should have at least 3 images.'
-        },
-        required: [true, 'Dog must have at least 3 images.']
-    },
-    size: { type: String, required: true },
-    activityLevel: { type: String, required: true },
+    breed: { type: String, required: true },
+    age: { type: Number, required: true },
+    image: String,
+    size:  { type: String, required: true },
+    activityLevel: { type: String, required: true }
+  });
+  
+  const  Dog = mongoose.model("Dog", DogSchema);
+
+///////////////////////////////
+// MiddleWare
+////////////////////////////////
+app.use(cors());
+app.use(morgan('dev'));
+app.use(express.json());
+  
+
+//////////////////////
+//ROUTES
+//////////////////////
+
+// Test route
+app.get('/', (req, res) => {
+    res.json({hello: "server"});
 });
 
-// Matching function as a method
-DogSchema.methods.getMatchScoreWith = function(otherDog) {
-    let points = 100;
-
-    if (this.breed === otherDog.breed) {
-        points += 10;
-    } else {
-        points -= 10;
-    }
-
-    if (this.size === otherDog.size) {
-        points += 5;
-    } else {
-        points -= 5;
-    }
-
-    if (this.activityLevel === otherDog.activityLevel) {
-        points += 5;
-    } else {
-        points -= 5;
-    }
-
-    if (Math.abs(this.age - otherDog.age) < 2) {
-        points += 3;
-    } else {
-        points -= 3;
-    }
-
-    return Math.max(points, 0);
-};
-
-const Dog = mongoose.model('Dog', DogSchema);
-
-// Routes for Dog
-const router = express.Router();
-
 // INDEX - GET - /dogs - gets all dogs
-router.get("/", async (req, res) => {
+app.get("/dogs", async (req, res) => {
     try {
         res.json(await Dog.find({}));
     } catch (error) {
@@ -91,7 +63,7 @@ router.get("/", async (req, res) => {
 });
 
 // CREATE - POST - /dogs - create a new dog
-router.post("/", async (req, res) => {
+app.post("/dogs", async (req, res) => {
     try {
         res.json(await Dog.create(req.body));
     } catch (error) {
@@ -99,8 +71,9 @@ router.post("/", async (req, res) => {
     }
 });
 
+
 // SHOW - GET - /dogs/:id - get a single dog
-router.get("/:id", async (req, res) => {
+app.get("/dogs/:id", async (req, res) => {
     try {
         const dog = await Dog.findById(req.params.id);
         if (!dog) {
@@ -113,7 +86,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // UPDATE - PUT - /dogs/:id - update a single dog
-router.put("/:id", async (req, res) => {
+app.put("/dogs/:id", async (req, res) => {
     try {
         const updatedDog = await Dog.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!updatedDog) {
@@ -126,7 +99,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE - DELETE - /dogs/:id - delete a single dog
-router.delete("/:id", async (req, res) => {
+app.delete("/dogs/:id", async (req, res) => {
     try {
         const deletedDog = await Dog.findByIdAndRemove(req.params.id);
         if (!deletedDog) {
@@ -138,20 +111,10 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
-app.use('/dogs', router);
 
-// Test route
-app.get('/', (req, res) => {
-    res.send('Hi server');
-});
-
-// Additional error handling
-app.use((req, res, next) => {
-    res.status(404).send('Route not found');
-});
-
-app.use((error, req, res, next) => {
-    res.status(500).json({ error: error.message });
-});
+//////////////////////
+// LISTENER
+//////////////////////
 
 app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));
+
