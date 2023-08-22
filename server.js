@@ -50,7 +50,12 @@ const DogSchema = new mongoose.Schema({
 ///////////////////////////////
 // MiddleWare
 ////////////////////////////////
-app.use(cors());
+app.use(
+    cors({
+      origin: "http://localhost:3000",
+      credentials: true,
+    })
+  );
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
@@ -67,7 +72,7 @@ app.get("/logout", (req, res) => {
 ////////////////////////////////
 async function authCheck(req, res, next){
     if(req.cookies.token){
-      const payload = await jwt.verify(req.cookies.token, process.env.SECRET)
+      const payload = jwt.verify(req.cookies.token, process.env.SECRET)
       req.payload = payload;
       next();
     } else {
@@ -112,7 +117,20 @@ app.post("/login", async (req, res) => {
         throw new Error("Password does not match");
       }
       const token = jwt.sign({ username: user.username }, process.env.SECRET);
-      res.cookie("token", token);
+      res.cookie("token", token, {
+        // can only be accessed by server requests
+        httpOnly: true,
+        // path = where the cookie is valid
+        path: "/",
+        // domain = what domain the cookie is valid on
+        domain: "localhost",
+        // secure = only send cookie over https
+        secure: false,
+        // sameSite = only send cookie if the request is coming from the same origin
+        sameSite: "lax", // "strict" | "lax" | "none" (secure must be true)
+        // maxAge = how long the cookie is valid for in milliseconds
+        maxAge: 3600000, // 1 hour
+      });
       res.json(user);
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -123,7 +141,7 @@ app.post("/login", async (req, res) => {
 app.get("/dogs", authCheck, async (req, res) => {
     try {
       // fetch all dogs from the database
-      const dogs = await Dogs.find({});
+      const dogs = await Dog.find({});
       // send JSON of all dogs
       res.json(dogs);
     } catch (error) {
@@ -135,7 +153,7 @@ app.get("/dogs", authCheck, async (req, res) => {
 // CREATE - POST - /dogs - create a new dog
 app.post("/dogs", authCheck, async (req, res) => {
     try {
-      const dog = await Dogs.create(req.body);
+      const dog = await Dog.create(req.body);
       personalbar.username = req.payload.username;
       res.json(dog);
     } catch (error) {
@@ -146,9 +164,7 @@ app.post("/dogs", authCheck, async (req, res) => {
   // SHOW - GET - /dogs/:id - get a single dog
   app.get("/dogs/:id", authCheck, async (req, res) => {
     try {
-      // get a dog from the database
-      const dog = await Dogs.findById(req.params.id);
-      // return the dog as JSON
+      const dog = await Dog.findById(req.params.id);
       res.json(dog);
     } catch (error) {
       res.status(400).json({ error });
@@ -159,7 +175,7 @@ app.post("/dogs", authCheck, async (req, res) => {
   app.put("/dogs/:id", authCheck, async (req, res) => {
     try {
       const dog = await 
-      Dogs.findByIdAndUpdate(req.params.id, req.body, {
+      Dog.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
       });
       res.json(dog);
@@ -172,7 +188,7 @@ app.post("/dogs", authCheck, async (req, res) => {
   app.delete("/dogs/:id", authCheck, async (req, res) => {
     try {
       const dog = await 
-      Dogs.findByIdAndDelete(req.params.id);
+      Dog.findByIdAndDelete(req.params.id);
       res.status(204).json(dog);
     } catch (error) {
       res.status(400).json({ error });
