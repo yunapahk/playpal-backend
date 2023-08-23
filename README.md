@@ -51,7 +51,10 @@ Find your perfect match! Swipe left or right to browse through profiles of dogs 
 
 ## Schemas
 ![Schema Models](https://i.imgur.com/jAq1RuC.png)
-   
+
+## Workflow
+![Workflow](https://i.imgur.com/0ZglNJ3.png)
+
 ## ERD (ENTITY RELATIONSHIP DIAGRAM)
 ``` mermaid
 erDiagram
@@ -89,3 +92,4 @@ erDiagram
 ```
 
 ### Deployed Site Screenshots
+
