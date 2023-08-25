@@ -2,7 +2,7 @@
 
 - **Contributors:** Yuna Pahk, Isaac Asher, Haleh Bozorgnia, and Nyijia Morgan
 - [**Backend**](https://github.com/yunapahk/playpal-backend)
-- [**Deployed Site**](https://playpal-976f.onrender.com)
+- [**Deployed Site**](https://playpal-frontend-gbu6.vercel.app/)
 - **Languages, Database, and Frameworks Used:** React, Express, Node, MongoDB, SASS, EJS, JSX, Javascript
 - [**Trello**](https://trello.com/b/6PwBedlF/playpal)
 
