@@ -122,12 +122,10 @@ app.post("/login", async (req, res) => {
         httpOnly: true,
         // path = where the cookie is valid
         path: "/",
-        // domain = what domain the cookie is valid on
-        domain: "localhost",
-        // secure = only send cookie over https
-        secure: false,
+        // domain = what domain the cookie is valid ons
+        secure: true,
         // sameSite = only send cookie if the request is coming from the same origin
-        sameSite: "lax", // "strict" | "lax" | "none" (secure must be true)
+        sameSite: "none", // "strict" | "lax" | "none" (secure must be true)
         // maxAge = how long the cookie is valid for in milliseconds
         maxAge: 3600000, // 1 hour
       });
