@@ -8,7 +8,7 @@
 
 ## Description
 
-PlayPal takes the guesswork out of planning playdates for your canine companions. With intuitive matching based on your dog's unique characteristics and needs, PlayPal creates a community of like-minded dog lovers. By connecting dog owners with each other and valuable local resources, PawMate makes it simple to plan, locate, and enjoy fun and safe playdates.
+PlayPal takes the guesswork out of planning playdates for your canine companions. With intuitive matching based on your dog's unique characteristics and needs, PlayPal creates a community of like-minded dog lovers. By connecting dog owners with each other and valuable local resources, PlayPal makes it simple to plan, locate, and enjoy fun and safe playdates.
 
 Whether you're a proud puppy parent seeking socialization opportunities or an experienced dog owner looking for new friends for your loyal companion, PlayPal is your go-to app for everything dog-related. Connect, play, and enjoy with PlayPal, your dog's new best friend is just a swipe away.
 
