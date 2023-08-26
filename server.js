@@ -52,7 +52,7 @@ const DogSchema = new mongoose.Schema({
 ////////////////////////////////
 app.use(
     cors({
-      origin: "https://playpal-yunapahk.vercel.app/",
+      origin: "https://playpal-yunapahk.vercel.app",
       credentials: true,
     })
   );
