@@ -52,7 +52,7 @@ const DogSchema = new mongoose.Schema({
 ////////////////////////////////
 app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: "https://playpal-yunapahk.vercel.app/",
       credentials: true,
     })
   );
@@ -202,4 +202,3 @@ app.post("/dogs", authCheck, async (req, res) => {
 //////////////////////
 
 app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));
-
